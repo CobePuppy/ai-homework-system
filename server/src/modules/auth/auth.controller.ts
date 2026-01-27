@@ -4,6 +4,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Post,
   Req,
   UploadedFile,
@@ -23,6 +24,7 @@ import {
 import { LogoutRequestDto, LogoutResponseDto } from './dto/logout.dto';
 import { MeResponseDto } from './dto/me.dto';
 import { RegisterRequestDto, RegisterResponseDto } from './dto/register.dto';
+import { ChangePasswordRequestDto, ChangePasswordResponseDto } from './dto/change-password.dto';
 import { Roles } from './roles.decorator';
 import { RolesGuard } from './roles.guard';
 import { UserRole } from './entities/user.entity';
@@ -185,5 +187,19 @@ export class AuthController {
         name: user.name ?? null,
       },
     };
+  }
+
+  @Patch('password')
+  @ApiOperation({ summary: 'Change password for current user.' })
+  @ApiBody({ type: ChangePasswordRequestDto })
+  @ApiResponse({ status: 200, type: ChangePasswordResponseDto })
+  @UseGuards(JwtAuthGuard)
+  async changePassword(
+    @Body() body: ChangePasswordRequestDto,
+    @Req() req: Request,
+  ) {
+    const payload = req.user as { sub: string };
+    await this.authService.changePassword(payload.sub, body);
+    return { code: 200, message: '密码修改成功' };
   }
 }
